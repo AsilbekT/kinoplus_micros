@@ -1,0 +1,40 @@
+// File: users.proto
+syntax = "proto3";
+
+package users;
+
+option go_package = "github.com/your_username/your_project/proto/users";
+
+// gRPC service definition
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {}
+}
+
+// Request and Response Messages
+message CreateUserRequest {
+  string email = 1;
+  string phone_number = 2;
+  string name = 3;
+}
+
+message CreateUserResponse {
+  bool success = 1;
+  string user_id = 2;
+  string error = 3;
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message GetUserResponse {
+  bool found = 1;
+  string email = 2;
+  string phone_number = 3;
+  string name = 4;
+  string error = 5;
+}
+
+
+// protoc -I proto/ proto/users.proto --go_out=proto/users --go-grpc_out=proto/users --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative

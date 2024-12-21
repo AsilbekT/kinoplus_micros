@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./user-service/db/init-user.sql:/docker-entrypoint-initdb.d/init-user.sql
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  broker:
+    build: ./broker
+    ports:
+      - "8080:8080" 
+
+  catelog-service:
+    build: ./catelog-service
+    ports:
+      - "8000:8000" 
+
+  auth-service:
+    build: ./auth
+    ports:
+      - "50052:50052"
+    environment:
+      DATABASE_URL: "postgresql://admin:admin@postgres/kinoplus_auth_db?sslmode=disable"
+      REDIS_ADDR: "redis://redis:6379"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  user-service:
+    build: ./user-service
+    ports:
+      - "50051:50051"
+    environment:
+      DATABASE_URL: "postgresql://admin:admin@postgres/user_db"
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+    driver: local
+  catalog_service_sockets:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    driver: bridge

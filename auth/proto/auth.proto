@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package auth;
+
+// Specify the Go package where the generated code should be placed.
+option go_package = "github.com/asilbekturgunboev/auth/proto";
+
+// The AuthService service definition.
+service AuthService {
+  rpc SendOTP(SendOTPRequest) returns (SendOTPResponse) {}
+  rpc VerifyOTP(VerifyOTPRequest) returns (VerifyOTPResponse) {}
+  rpc QRAuth(QRAuthRequest) returns (QRAuthResponse) {}
+}
+
+// Request message for sending OTP
+message SendOTPRequest {
+  string phone_number = 1;
+}
+
+// Response message for sending OTP
+message SendOTPResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Request message for verifying OTP
+message VerifyOTPRequest {
+  string phone_number = 1;
+  string otp = 2;
+}
+
+// Response message for verifying OTP
+message VerifyOTPResponse {
+  bool success = 1;
+  string message = 2;
+  string token = 3;
+}
+
+message QRAuthRequest {
+  string session_id = 1;
+  int32 user_id = 2;
+}
+
+message QRAuthResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// protoc -I proto/ proto/auth.proto --go_out=proto/ --go-grpc_out=proto/ --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative
