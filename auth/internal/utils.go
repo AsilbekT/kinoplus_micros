@@ -201,7 +201,12 @@ func fetchTokenFromAPI(email, password string) (string, error) {
 }
 
 func sendPostResponse(sessionID string, data string) (int, string) {
-	postDataBytes, err := json.Marshal(data)
+	jsonPayload := map[string]string{
+		"token": data,
+	}
+
+	// Encode the JSON object
+	postDataBytes, err := json.Marshal(jsonPayload)
 	if err != nil {
 		log.Printf("Failed to encode post data: %v", err)
 		return http.StatusInternalServerError, "Failed to encode post data"
