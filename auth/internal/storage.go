@@ -43,10 +43,28 @@ func NewStorage(db *sql.DB) *Storage {
 
 func (s *Storage) getUserByID(userID int) (*UserInfo, error) {
 	var user UserInfo
-	err := s.DB.QueryRow("SELECT id, email, phone_number, name FROM users WHERE id = $1", userID).Scan(&user.ID, &user.Email, &user.PhoneNumber, &user.Name)
+
+	// Use sql.NullString for nullable columns
+	var email, phoneNumber, name sql.NullString
+
+	query := `
+		SELECT id, email, phone_number, name 
+		FROM users 
+		WHERE id = $1
+	`
+	err := s.DB.QueryRow(query, userID).Scan(
+		&user.ID, &email, &phoneNumber, &name,
+	)
 	if err != nil {
+		log.Printf("Error retrieving user by ID: %v", err)
 		return nil, err
 	}
+
+	// Convert sql.NullString to string, handling NULL values
+	user.Email = getString(email)
+	user.PhoneNumber = getString(phoneNumber)
+	user.Name = getString(name)
+
 	return &user, nil
 }
 
@@ -91,7 +109,7 @@ func (s *Storage) verifyAppleIDToken(idToken string) (*UserInfo, error) {
 func (s *Storage) getOrCreateUser(ctx context.Context, userInfo *UserInfo) (*User, error) {
 	var user User
 
-	// Define variables to hold nullable values
+	// Use sql.NullString for nullable columns
 	var email, phoneNumber, name, googleID, appleID sql.NullString
 
 	query := `
@@ -102,6 +120,8 @@ func (s *Storage) getOrCreateUser(ctx context.Context, userInfo *UserInfo) (*Use
 		OR (email = $3 AND email IS NOT NULL AND email != '') 
 		OR (phone_number = $4 AND phone_number IS NOT NULL AND phone_number != '')
 	`
+
+	// Scan nullable fields into sql.NullString
 	err := s.DB.QueryRow(query, userInfo.GoogleID, userInfo.AppleID, userInfo.Email, userInfo.PhoneNumber).Scan(
 		&user.ID, &email, &phoneNumber, &name, &googleID, &appleID,
 	)
@@ -129,7 +149,7 @@ func (s *Storage) getOrCreateUser(ctx context.Context, userInfo *UserInfo) (*Use
 		userID := createUserResp.UserId
 		log.Printf("CreateUser response received: %+v", userID)
 
-		// Use `NULL` for empty fields in the INSERT query
+		// Use `NULLIF` for empty fields in the INSERT query
 		err = s.DB.QueryRow(`
             INSERT INTO users (email, phone_number, name, google_id, apple_id, auth_type, created_at, updated_at) 
             VALUES (NULLIF($1, ''), NULLIF($2, ''), $3, NULLIF($4, ''), NULLIF($5, ''), $6, $7, $8)
@@ -148,24 +168,22 @@ func (s *Storage) getOrCreateUser(ctx context.Context, userInfo *UserInfo) (*Use
 		return nil, fmt.Errorf("error checking user existence: %v", err)
 	} else {
 		// Assign nullable values back to the user object
-		if email.Valid {
-			user.Email = email.String
-		}
-		if phoneNumber.Valid {
-			user.PhoneNumber = phoneNumber.String
-		}
-		if name.Valid {
-			user.Name = name.String
-		}
-		if googleID.Valid {
-			user.GoogleID = googleID.String
-		}
-		if appleID.Valid {
-			user.AppleID = appleID.String
-		}
+		user.Email = getString(email)
+		user.PhoneNumber = getString(phoneNumber)
+		user.Name = getString(name)
+		user.GoogleID = getString(googleID)
+		user.AppleID = getString(appleID)
 	}
 
 	return &user, nil
+}
+
+// Helper function to extract string from sql.NullString
+func getString(ns sql.NullString) string {
+	if ns.Valid {
+		return ns.String
+	}
+	return ""
 }
 
 func (s *Storage) InsertSession(userID int, deviceName, token string) error {
