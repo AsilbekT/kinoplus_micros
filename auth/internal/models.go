@@ -25,6 +25,8 @@ type User struct {
 	Email       string
 	PhoneNumber string
 	Name        string
+	GoogleID    string `json:"google_id"`
+	AppleID     string `json:"apple_id"`
 }
 
 type Credentials struct {

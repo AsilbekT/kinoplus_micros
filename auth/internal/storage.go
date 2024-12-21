@@ -87,6 +87,7 @@ func (s *Storage) verifyAppleIDToken(idToken string) (*UserInfo, error) {
 		return nil, err
 	}
 }
+
 func (s *Storage) getOrCreateUser(ctx context.Context, userInfo *UserInfo) (*User, error) {
 	var user User
 
@@ -155,6 +156,12 @@ func (s *Storage) getOrCreateUser(ctx context.Context, userInfo *UserInfo) (*Use
 		}
 		if name.Valid {
 			user.Name = name.String
+		}
+		if googleID.Valid {
+			user.GoogleID = googleID.String
+		}
+		if appleID.Valid {
+			user.AppleID = appleID.String
 		}
 	}
 
