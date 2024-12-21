@@ -90,8 +90,11 @@ func (s *Storage) verifyAppleIDToken(idToken string) (*UserInfo, error) {
 func (s *Storage) getOrCreateUser(ctx context.Context, userInfo *UserInfo) (*User, error) {
 	var user User
 
+	// Define variables to hold nullable values
+	var email, phoneNumber, name, googleID, appleID sql.NullString
+
 	query := `
-		SELECT id, email, phone_number, name 
+		SELECT id, email, phone_number, name, google_id, apple_id
 		FROM users 
 		WHERE (google_id = $1 AND google_id IS NOT NULL AND google_id != '') 
 		OR (apple_id = $2 AND apple_id IS NOT NULL AND apple_id != '') 
@@ -99,10 +102,11 @@ func (s *Storage) getOrCreateUser(ctx context.Context, userInfo *UserInfo) (*Use
 		OR (phone_number = $4 AND phone_number IS NOT NULL AND phone_number != '')
 	`
 	err := s.DB.QueryRow(query, userInfo.GoogleID, userInfo.AppleID, userInfo.Email, userInfo.PhoneNumber).Scan(
-		&user.ID, &user.Email, &user.PhoneNumber, &user.Name,
+		&user.ID, &email, &phoneNumber, &name, &googleID, &appleID,
 	)
 
 	log.Println("here on get or create -> ", err, userInfo)
+
 	if err == sql.ErrNoRows {
 		// Insert new user if not found and fetch its ID
 		now := time.Now()
@@ -138,8 +142,20 @@ func (s *Storage) getOrCreateUser(ctx context.Context, userInfo *UserInfo) (*Use
 		user.Email = userInfo.Email
 		user.PhoneNumber = userInfo.PhoneNumber
 		user.Name = userInfo.Name
+
 	} else if err != nil {
 		return nil, fmt.Errorf("error checking user existence: %v", err)
+	} else {
+		// Assign nullable values back to the user object
+		if email.Valid {
+			user.Email = email.String
+		}
+		if phoneNumber.Valid {
+			user.PhoneNumber = phoneNumber.String
+		}
+		if name.Valid {
+			user.Name = name.String
+		}
 	}
 
 	return &user, nil
