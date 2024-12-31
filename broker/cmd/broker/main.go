@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -28,6 +29,12 @@ func main() {
 	// Initialize new mux router
 	r := mux.NewRouter()
 
+	// Setup CORS
+	cors := handlers.CORS(
+		handlers.AllowedOrigins([]string{"*"}), // Adjust the origins as necessary
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
+		handlers.AllowedHeaders([]string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"}),
+	)
 	// Setup HTTP server with mux for better routing
 	r.HandleFunc("/createuser", usersHandler.CreateUser).Methods("POST")
 	r.HandleFunc("/getuser", usersHandler.GetUser).Methods("GET")
@@ -37,7 +44,8 @@ func main() {
 
 	// Listen and serve on HTTP port with mux router
 	log.Println("Broker service is running on port 8080...")
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	err = http.ListenAndServe(":8080", cors(r))
+	if err != nil {
 		log.Fatalf("Failed to start HTTP server: %v", err)
 	}
 }
