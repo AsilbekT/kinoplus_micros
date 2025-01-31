@@ -1,0 +1,1456 @@
+openapi: 3.0.0
+info:
+  title: Kinoplus API
+  version: 1.0.0
+  description: API for managing movie and series data in the Kinoplus platform.
+servers:
+  - url: https://gateway.kinoplus.uz/
+    description: Production server
+
+paths:
+  /auth/send-otp:
+    post:
+      summary: Send OTP to a phone number
+      operationId: sendOtp
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  type: string
+                  example: "+998903640804"
+      responses:
+        '200':
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "OTP sent successfully"
+
+  /auth/verify-otp:
+    post:
+      summary: Verify OTP for a phone number
+      operationId: verifyOtp
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  type: string
+                  example: "+998903640804"
+                otp:
+                  type: string
+                  example: "824470"
+      responses:
+        '200':
+          description: OTP verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "OTP verified successfully"
+                  token:
+                    type: string
+                    description: Authentication token
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzU0MTk0NDQsImVtYWlsIjoiIiwicGhvbmVfbnVtYmVyIjoiKzk5ODkwMzY0MDgwNCIsInVzZXJfaWQiOiI1In0.P9EpS45H5nylXwgah04X3SpHSgX7kEd3bmKSrioky9A"
+
+  /auth/add-qr-user:
+    post:
+      summary: Add a QR user with session ID and user ID
+      operationId: addQrUser
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                session_id:
+                  type: string
+                  format: uuid
+                  example: "48e68e8c-9ca6-4a2d-8237-619f49126ed8"
+                user_id:
+                  type: integer
+                  example: 3
+      responses:
+        '200':
+          description: QR user added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "QR user added successfully"
+
+  /auth/logout:
+    post:
+      summary: Logout the authenticated user
+      operationId: logoutUser
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: [] 
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "User logged out successfully"
+
+  /catalogservice/genres/:
+    get:
+      summary: List all genres
+      operationId: listGenres
+      tags:
+        - Genre
+      responses:
+        '200':
+          description: An array of genres
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Genre'
+    post:
+      summary: Create a new genre
+      operationId: createGenre
+      tags:
+        - Genre
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenreCreateRequest'
+      responses:
+        '201':
+          description: New genre created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+  /catalogservice/genres/{id}/:
+    get:
+      summary: Retrieve a specific genre
+      operationId: getGenre
+      tags:
+        - Genre
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detailed information about a genre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+    put:
+      summary: Update a genre
+      operationId: updateGenre
+      tags:
+        - Genre
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenreCreateRequest'
+      responses:
+        '200':
+          description: Genre updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+    delete:
+      summary: Delete a genre
+      operationId: deleteGenre
+      tags:
+        - Genre
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Genre deleted
+
+  /catalogservice/movies/:
+    get:
+      summary: List all movies
+      operationId: listMovies
+      tags:
+        - Movie
+      responses:
+        '200':
+          description: A list of movies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Movie'
+    post:
+      summary: Create a new movie
+      operationId: createMovie
+      tags:
+        - Movie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovieCreateRequest'
+      responses:
+        '201':
+          description: New movie created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+  /catalogservice/movies/{id}/:
+    get:
+      summary: Retrieve a specific movie
+      operationId: getMovie
+      tags:
+        - Movie
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detailed information about a movie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+  /catalogservice/directors/:
+    get:
+      summary: List all directors
+      operationId: listDirectors
+      tags:
+        - Director
+      responses:
+        '200':
+          description: An array of directors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Director'
+    post:
+      summary: Create a new director
+      operationId: createDirector
+      tags:
+        - Director
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DirectorCreateRequest'
+      responses:
+        '201':
+          description: New director created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Director'
+  /catalogservice/directors/{id}/:
+    get:
+      summary: Retrieve a specific director
+      operationId: getDirector
+      tags:
+        - Director
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detailed information about a director
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Director'
+    put:
+      summary: Update a director
+      operationId: updateDirector
+      tags:
+        - Director
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DirectorCreateRequest'
+      responses:
+        '200':
+          description: Director updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Director'
+    delete:
+      summary: Delete a director
+      operationId: deleteDirector
+      tags:
+        - Director
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Director deleted
+
+  /catalogservice/banners/:
+    get:
+      summary: List all banners
+      operationId: listBanners
+      tags:
+        - Banner
+      responses:
+        '200':
+          description: A list of banners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Banner'
+    post:
+      summary: Create a new banner
+      operationId: createBanner
+      tags:
+        - Banner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BannerCreateRequest'
+      responses:
+        '201':
+          description: New banner created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+  /catalogservice/banners/{id}/:
+    get:
+      summary: Retrieve a specific banner
+      operationId: getBanner
+      tags:
+        - Banner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detailed information about a banner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+    put:
+      summary: Update a banner
+      operationId: updateBanner
+      tags:
+        - Banner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BannerCreateRequest'
+      responses:
+        '200':
+          description: Banner updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+    delete:
+      summary: Delete a banner
+      operationId: deleteBanner
+      tags:
+        - Banner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Banner deleted
+
+  /catalogservice/plans/:
+    get:
+      summary: List all subscription plans
+      operationId: listSubscriptionPlans
+      tags:
+        - SubscriptionPlan
+      responses:
+        '200':
+          description: A list of subscription plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionPlan'
+    post:
+      summary: Create a new subscription plan
+      operationId: createSubscriptionPlan
+      tags:
+        - SubscriptionPlan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPlanCreateRequest'
+      responses:
+        '201':
+          description: New subscription plan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPlan'
+  /catalogservice/plans/{id}/:
+    get:
+      summary: Retrieve a specific subscription plan
+      operationId: getSubscriptionPlan
+      tags:
+        - SubscriptionPlan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detailed information about a subscription plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPlan'
+    put:
+      summary: Update a subscription plan
+      operationId: updateSubscriptionPlan
+      tags:
+        - SubscriptionPlan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPlanCreateRequest'
+      responses:
+        '200':
+          description: Subscription plan updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPlan'
+    delete:
+      summary: Delete a subscription plan
+      operationId: deleteSubscriptionPlan
+      tags:
+        - SubscriptionPlan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Subscription plan deleted
+
+  /catalogservice/user-favorites/:
+    get:
+      summary: List all favorite content for the user
+      operationId: listFavoriteContent
+      tags:
+        - FavoriteContent
+      responses:
+        '200':
+          description: A list of user’s favorite content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FavoriteContent'
+    post:
+      summary: Add content to favorites
+      operationId: addFavoriteContent
+      tags:
+        - FavoriteContent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavoriteContentCreateRequest'
+      responses:
+        '201':
+          description: Content added to favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteContent'
+
+  /catalogservice/series/{series_pk}/seasons/:
+    get:
+      summary: List all seasons for a series
+      operationId: listSeasons
+      tags:
+        - Series
+      parameters:
+        - name: series_pk
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of seasons for a series
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Season'
+  /catalogservice/series/{series_pk}/seasons/{season_pk}/episodes/:
+    get:
+      summary: List all episodes for a season
+      operationId: listEpisodes
+      tags:
+        - Season
+      parameters:
+        - name: series_pk
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: season_pk
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of episodes for a season
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Episode'
+
+  /catalogservice/category/:
+    get:
+      summary: List all categories
+      operationId: listCategories
+      tags:
+        - Category
+      responses:
+        '200':
+          description: A list of active categories ordered by priority
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+    post:
+      summary: Create a new category
+      operationId: createCategory
+      tags:
+        - Category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateRequest'
+      responses:
+        '201':
+          description: New category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+  /catalogservice/category/{id}/:
+    get:
+      summary: Retrieve a specific category
+      operationId: getCategory
+      tags:
+        - Category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Details of the specified category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+    put:
+      summary: Update a category
+      operationId: updateCategory
+      tags:
+        - Category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateRequest'
+      responses:
+        '200':
+          description: Updated category details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+    delete:
+      summary: Delete a category
+      operationId: deleteCategory
+      tags:
+        - Category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Category deleted
+  /catalogservice/category/{id}/content/:
+    get:
+      summary: Retrieve content for a category
+      operationId: getCategoryContent
+      tags:
+        - Category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of movies and series for the category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                        is_movie:
+                          type: boolean
+                        slug:
+                          type: string
+                        telegram_link:
+                          type: string
+                          format: uri
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      total_pages:
+                        type: integer
+                      total_items:
+                        type: integer
+  /catalogservice/subscriptions/{username}/{subscription_plan_name}/:
+    put:
+      summary: Update a user subscription
+      operationId: updateUserSubscription
+      tags:
+        - UserSubscription
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Username for the subscription
+        - name: subscription_plan_name
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Subscription plan name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSubscriptionUpdateRequest'
+
+      responses:
+        '200':
+          description: Subscription updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSubscription'
+    delete:
+      summary: Delete a user subscription
+      operationId: deleteUserSubscription
+      tags:
+        - UserSubscription
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Username for the subscription
+        - name: subscription_plan_name
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Subscription plan name
+      responses:
+        '204':
+          description: Subscription deleted successfully
+
+  /catalogservice/movies/slug/{slug}/:
+    get:
+      summary: Retrieve movie details by slug
+      operationId: getMovieBySlug
+      tags:
+        - Movie
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Slug of the movie
+      responses:
+        '200':
+          description: Movie details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+
+  /catalogservice/category/{slug}/slug/:
+    get:
+      summary: Retrieve category content by slug
+      operationId: getCategoryContentBySlug
+      tags:
+        - Category
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Slug of the category
+      responses:
+        '200':
+          description: Content for the category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                        is_movie:
+                          type: boolean
+                        slug:
+                          type: string
+                        telegram_link:
+                          type: string
+                          format: uri
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      total_pages:
+                        type: integer
+                      total_items:
+                        type: integer
+
+  /catalogservice/comments/:
+    get:
+      summary: List all comments
+      operationId: listComments
+      tags:
+        - Comment
+      parameters:
+        - name: content_type
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Filter comments by content type
+        - name: object_id
+          in: query
+          required: false
+          schema:
+            type: integer
+            description: Filter comments by object ID
+      responses:
+        '200':
+          description: A list of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+    post:
+      summary: Create a new comment
+      operationId: createComment
+      tags:
+        - Comment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreateRequest'
+      responses:
+        '201':
+          description: Comment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+
+  /catalogservice/docs/:
+    get:
+      summary: List all KinoplusDocs
+      operationId: listKinoplusDocs
+      tags:
+        - KinoplusDocs
+      responses:
+        '200':
+          description: A list of KinoplusDocs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KinoplusDocs'
+
+  /v2/search/:
+    get:
+      summary: Advanced search (Version 2)
+      operationId: advancedSearchV2
+      tags:
+        - Search
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: genre
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: director
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: min_rating
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: max_rating
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: start_year
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: end_year
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+
+  /available-years/:
+    get:
+      summary: Get available release years for movies and series
+      operationId: availableYears
+      tags:
+        - Search
+      responses:
+        '200':
+          description: Available release years
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  available_years:
+                    type: array
+                    items:
+                      type: integer
+                example:
+                  available_years: [2000, 2005, 2010, 2020]
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SearchResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              title:
+                type: string
+              type:
+                type: string
+                enum: [Movie, Series]
+              release_date:
+                type: string
+                format: date
+              genre:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+              director:
+                type: string
+              thumbnail_image:
+                type: string
+                format: uri
+              rating:
+                type: number
+                format: float
+              is_premiere:
+                type: boolean
+              is_mobile_only:
+                type: boolean
+              slug:
+                type: string
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            total_pages:
+              type: integer
+            total_items:
+              type: integer
+      example:
+        content:
+          - id: 1
+            title: "Inception"
+            type: "Movie"
+            release_date: "2010-07-16"
+            genre:
+              - id: 1
+                name: "Sci-Fi"
+            director: "Christopher Nolan"
+            thumbnail_image: "https://example.com/image.jpg"
+            rating: 8.8
+            is_premiere: true
+            is_mobile_only: false
+            slug: "inception"
+        pagination:
+          page: 1
+          total_pages: 10
+          total_items: 100
+
+    Director:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+        - name
+    DirectorCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+
+    Genre:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+        - name
+    GenreCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+    Movie:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        release_date:
+          type: string
+          format: date
+        duration_minute:
+          type: integer
+        is_premiere:
+          type: boolean
+        thumbnail_image:
+          type: string
+          format: uri
+        genre:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - title
+        - description
+        - release_date
+    MovieCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        release_date:
+          type: string
+          format: date
+        duration_minute:
+          type: integer
+        is_premiere:
+          type: boolean
+      required:
+        - title
+        - description
+        - release_date
+    Banner:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        priority:
+          type: integer
+        status:
+          type: boolean
+      required:
+        - name
+        - priority
+        - status
+    BannerCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        priority:
+          type: integer
+        status:
+          type: boolean
+      required:
+        - name
+        - priority
+        - status
+
+    SubscriptionPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        price:
+          type: number
+          format: float
+        duration_days:
+          type: integer
+        description:
+          type: string
+      required:
+        - id
+        - name
+        - price
+        - duration_days
+    SubscriptionPlanCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+          format: float
+        duration_days:
+          type: integer
+        description:
+          type: string
+      required:
+        - name
+        - price
+        - duration_days
+
+    FavoriteContent:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        content_type:
+          type: string
+        object_id:
+          type: integer
+      required:
+        - id
+        - username
+        - content_type
+        - object_id
+    FavoriteContentCreateRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        content_type:
+          type: string
+        object_id:
+          type: integer
+      required:
+        - username
+        - content_type
+        - object_id
+
+    Season:
+      type: object
+      properties:
+        id:
+          type: integer
+        season_number:
+          type: integer
+        trailer_url:
+          type: string
+          format: uri
+        thumbnail_image:
+          type: string
+          format: uri
+      required:
+        - id
+        - season_number
+    Episode:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        episode_number:
+          type: integer
+        duration_minute:
+          type: integer
+      required:
+        - id
+        - title
+        - episode_number
+        - duration_minute
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        priority:
+          type: integer
+        is_active:
+          type: boolean
+      required:
+        - id
+        - name
+        - slug
+        - priority
+        - is_active
+    CategoryCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        priority:
+          type: integer
+        is_active:
+          type: boolean
+      required:
+        - name
+        - slug
+        - priority
+        - is_active
+
+    UserSubscription:
+      type: object
+      properties:
+        username:
+          type: string
+        subscription_plan_name:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: ["Active", "Paused", "Exhausted", "Expired"]
+      required:
+        - username
+        - subscription_plan_name
+        - start_date
+        - end_date
+        - status
+
+    UserSubscriptionUpdateRequest:
+      type: object
+      properties:
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: ["Active", "Paused", "Exhausted", "Expired"]
+      required:
+        - start_date
+        - end_date
+        - status
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        content:
+          type: string
+        object_id:
+          type: integer
+        content_type:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - username
+        - content
+        - object_id
+        - content_type
+        - created_at
+        - updated_at
+
+    CommentCreateRequest:
+      type: object
+      properties:
+        content:
+          type: string
+        content_type:
+          type: string
+        object_id:
+          type: integer
+        parent:
+          type: integer
+          nullable: true
+      required:
+        - content
+        - content_type
+        - object_id
+
+    KinoplusDocs:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        document:
+          type: string
+          format: uri
+      required:
+        - id
+        - title
+        - document
+

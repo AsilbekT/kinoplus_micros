@@ -19,6 +19,8 @@ func NewAuthClient(serviceAddr string) (AuthClient, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to Auth Service: %w", err)
 	}
+	log.Println("Broker service is now connected to Auth Service")
+
 	return &authClient{client: authpb.NewAuthServiceClient(conn)}, nil
 }
 

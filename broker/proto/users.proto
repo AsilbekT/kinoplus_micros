@@ -29,12 +29,14 @@ message GetUserRequest {
 }
 
 message GetUserResponse {
-  bool found = 1;
-  string email = 2;
-  string phone_number = 3;
-  string name = 4;
-  string error = 5;
+  string user_id = 1;
+  string username = 2;
+  string email = 3;
+  string phone_number = 4;
+  string google_id = 5;
+  string apple_id = 6;
 }
+
 
 
 // protoc -I proto/ proto/users.proto --go_out=proto/users --go-grpc_out=proto/users --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative

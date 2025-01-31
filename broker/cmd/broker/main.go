@@ -21,7 +21,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to Auth Service: %v", err)
 	}
-
 	// Initialize HTTP handler
 	usersHandler := internal.NewHandler(usersClient)
 	authHandler := internal.NewHandler(authClient)

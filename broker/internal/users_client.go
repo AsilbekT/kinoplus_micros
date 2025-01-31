@@ -19,6 +19,7 @@ func NewUsersClient(address string) (*UsersClient, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to Users Service: %w", err)
 	}
+	fmt.Println("Broker service is now connected to Users Service")
 	return &UsersClient{client: userspb.NewUserServiceClient(conn)}, nil
 }
 
